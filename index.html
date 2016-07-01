@@ -1,0 +1,56 @@
+<html>
+	<head>
+		<title>Neural Network</title>
+		<style>
+			body{
+				margin: 0px;
+			}
+
+			.bar {
+				fill: steelblue;
+			}
+
+			.axis text {
+				font: 10px sans-serif;
+			}
+
+			.axis path,
+			.axis line {
+				fill: none;
+				stroke: #000;
+				shape-rendering: crispEdges;
+			}
+
+			.x.axis path {
+				display: none;
+			}
+
+			.link {
+				stroke: #aaa;
+			}
+
+			.node text {
+				stroke:#333;
+				cursos:pointer;
+			}
+
+			.node circle{
+				stroke:#fff;
+				stroke-width:3px;
+				fill:#555;
+			}
+		</style>
+	</head>
+	<body>
+		<center>
+			<svg class="chart"></svg><br>
+			<svg class="net"></svg>
+			
+		</center>
+
+		<script src="https://d3js.org/d3.v3.min.js"></script>
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/mathjs/3.2.1/math.min.js"></script>
+		<script src="visuals.js"></script>
+		<script src="network.js"></script>
+	</body>
+</html>
