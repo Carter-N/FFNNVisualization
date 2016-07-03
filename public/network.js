@@ -1,15 +1,18 @@
-importScripts("http://cdnjs.cloudflare.com/ajax/libs/mathjs/3.2.1/math.min.js");  
-
 var x = [
-	[0, 0, 1],
-	[0, 1, 1],
 	[1, 0, 1],
-	[1, 1, 1]
+	[1, 0, 0],
+	[1, 1, 0],
+	[0, 1, 1],
+	[1, 1, 1],
+	[0, 0, 0],
+	[0, 0, 1],
 ];
 
 var y = [
-	[0, 1, 1, 0]
+	[1, 0, 0, 0, 1, 1, 0]
 ];
+
+var hiddenLayerNodes = 6;
 
 //input data
 var data = math.matrix(x);
@@ -25,19 +28,20 @@ var randomWeights = function(w, h){
 };
 
 //first layer of weights
-var w0 = randomWeights(data.size()[1], data.size()[0]);
+var w0 = randomWeights(data.size()[1], hiddenLayerNodes);
 
 //second layer of weights
-var w1 =randomWeights(labels.size()[0], labels.size()[1]);
+var w1 = randomWeights(hiddenLayerNodes, labels.size()[1]);
 
 //training iterations
-var iterations =  60000;
+var iterations =  5000;
 
 //Current output of network
 var out = null;
 
 //Error data
-var errorSamples = 40;
+var samples = 0;
+var errorSamples = 160;
 var collectionInterval = iterations / errorSamples;
 var errorData = [];
 
@@ -62,6 +66,8 @@ var calculateTotalError = function(errorMatrix){
 	return count / (errorMatrix.size()[0] * errorMatrix.size()[1]);
 };
 
+var start = new Date().getTime();
+
 for(var i = 0; i < iterations; i++){
 
 	//input layer
@@ -83,12 +89,16 @@ for(var i = 0; i < iterations; i++){
 	var l2Error = math.subtract(labels, l2);
 
 	if(i % collectionInterval == 0){
+		samples++;
 		var currentError = calculateTotalError(l2Error);
-		postMessage({
-			type: "error sample",
-			currentError: currentError
-		});
-		errorData.push(currentError);
+
+		if(i % (collectionInterval * 10) == 0){
+			log("Current network error: " + currentError);
+		}
+
+		if(samples != 1){
+			errorData.push(currentError);
+		}
 	}
 
 	//error gradient
@@ -109,17 +119,22 @@ for(var i = 0; i < iterations; i++){
 	w0 = math.add(w0, math.multiply(math.transpose(l0), l1Delta));
 }
 
-postMessage({
-	type: "finished",
-	errorData: errorData,
-	iterations: iterations
-});
+var end = new Date().getTime();
 
 var predict = function(input){
 
-	var prediction = math.multiply(input, w0).map(function(value, index, matrix){
+	var l1 = math.multiply(input, w0).map(function(value, index, matrix){
 		return sigmoid(value);	
 	});
 
-	return Math.round(prediction._data[0]);
+	//output layer
+	var l2 = math.multiply(l1, w1).map(function(value, index, matrix){
+		return sigmoid(value);
+	});
+
+	return Math.round(l2._data[0]);
 };
+
+log("Training finished, elapsed time: " + (end - start) + "ms");
+createChart();
+createNet([data.size()[1], hiddenLayerNodes, labels.size()[1]], [w0, w1]);
